@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Devotional</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌅</text></svg>">
+<style>
+  :root {
+    --bg: #faf7f0;
+    --card: #ffffff;
+    --ink: #2d2a24;
+    --muted: #7a7468;
+    --accent: #b0713b;
+    --accent-soft: #f3e6d8;
+    --rule: #e8e1d4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1d1b17;
+      --card: #26231e;
+      --ink: #ece7dd;
+      --muted: #a39b8c;
+      --accent: #d99a5e;
+      --accent-soft: #3a3126;
+      --rule: #3a362e;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Georgia, "Times New Roman", serif;
+    line-height: 1.65;
+    padding: 2rem 1rem 4rem;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2rem; }
+  header .kicker {
+    font-family: -apple-system, "Segoe UI", sans-serif;
+    font-size: .75rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  header h1 { font-size: 1.6rem; font-weight: normal; margin-top: .35rem; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    padding: 2rem 1.75rem;
+    box-shadow: 0 2px 14px rgba(0,0,0,.05);
+  }
+  .meta {
+    font-family: -apple-system, "Segoe UI", sans-serif;
+    font-size: .8rem;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 1.4rem;
+  }
+  .meta .book { color: var(--accent); font-weight: 600; }
+  h2.title { font-size: 1.5rem; text-align: center; font-weight: normal; margin-bottom: 1.2rem; }
+  blockquote.verse {
+    font-style: italic;
+    border-left: 3px solid var(--accent);
+    padding: .4rem 0 .4rem 1rem;
+    margin: 0 0 1.6rem;
+    color: var(--muted);
+  }
+  ul.points { list-style: none; margin-bottom: 1.8rem; }
+  ul.points li {
+    padding: .55rem 0 .55rem 1.8rem;
+    position: relative;
+    border-bottom: 1px dashed var(--rule);
+  }
+  ul.points li:last-child { border-bottom: none; }
+  ul.points li::before { content: "✦"; position: absolute; left: .2rem; color: var(--accent); }
+  .hymn {
+    background: var(--accent-soft);
+    border-radius: 10px;
+    padding: .9rem 1.1rem;
+    margin-bottom: 1.8rem;
+    font-family: -apple-system, "Segoe UI", sans-serif;
+    font-size: .95rem;
+  }
+  .hymn .label { font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; color: var(--accent); display: block; }
+  .prayer { font-style: italic; }
+  .prayer .label {
+    font-style: normal;
+    font-family: -apple-system, "Segoe UI", sans-serif;
+    font-size: .7rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: .3rem;
+  }
+  footer {
+    margin-top: 1.6rem;
+    text-align: center;
+    font-family: -apple-system, "Segoe UI", sans-serif;
+    font-size: .8rem;
+    color: var(--muted);
+  }
+  footer a { color: var(--accent); }
+  #status { text-align: center; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Daily Devotional · Ellen G. White</div>
+    <h1>Morning Light 🌅</h1>
+  </header>
+
+  <div class="card" id="card" hidden>
+    <div class="meta"><span class="book" id="book"></span> · <span id="date"></span></div>
+    <h2 class="title" id="title"></h2>
+    <blockquote class="verse" id="verse"></blockquote>
+    <ul class="points" id="points"></ul>
+    <div class="hymn">
+      <span class="label">Hymn of the day</span>
+      <span id="hymn"></span>
+    </div>
+    <div class="prayer">
+      <span class="label">Takeaway prayer</span>
+      <span id="prayer"></span>
+    </div>
+  </div>
+
+  <p id="status">Loading today's devotional…</p>
+
+  <footer>
+    <a id="source" href="#" target="_blank" rel="noopener">Read the full devotional at whiteestate.org</a>
+    <p>Summaries generated daily at 6 AM. Devotional text © Ellen G. White Estate.</p>
+  </footer>
+</div>
+
+<script>
+fetch('data.json?t=' + Date.now())
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById('book').textContent = d.book;
+    document.getElementById('date').textContent = d.date_display;
+    document.getElementById('title').textContent = d.title;
+    document.getElementById('verse').textContent = d.verse;
+    const ul = document.getElementById('points');
+    d.bullets.forEach(b => {
+      const li = document.createElement('li');
+      li.textContent = b;
+      ul.appendChild(li);
+    });
+    document.getElementById('hymn').textContent = 'No. ' + d.hymn.number + ' — ' + d.hymn.title;
+    document.getElementById('prayer').textContent = d.prayer;
+    document.getElementById('source').href = d.source_url;
+    document.getElementById('card').hidden = false;
+    document.getElementById('status').hidden = true;
+  })
+  .catch(() => {
+    document.getElementById('status').textContent =
+      "Today's devotional isn't ready yet — check back after 6 AM.";
+  });
+</script>
+</body>
+</html>
